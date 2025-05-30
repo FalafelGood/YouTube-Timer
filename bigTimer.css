@@ -1,0 +1,35 @@
+/* A.M.D.G. */
+
+.title {
+    text-align: center;
+    font-size: 30px;
+}
+
+.time {
+    font-size: 70px;
+    text-align: center;
+}
+
+.setting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF0033;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 5px;
+    margin: 10px 0;
+    border-radius: 3px;
+    transition: all 0.1s linear;
+    user-select: none;
+    text-align: center;
+}
+
+.setting:hover {
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.setting:active {
+    transform: scale(0.96);
+}
