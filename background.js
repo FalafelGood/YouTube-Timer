@@ -67,10 +67,14 @@ function stopClock() {
     clockInterval = undefined;
 }
 
+function isYouTube(tab) {
+    return (tab.url && tab.url.includes("youtube.com"));
+}
+
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log("onUpdate triggered")
-    if (tab.url && tab.url.includes("youtube.com/watch")) {
+    if (isYouTube(tab)) {
         if (timeRemaining <= 0) {
             chrome.tabs.sendMessage(tabId, {type: "block"});
             return;
@@ -88,7 +92,7 @@ chrome.tabs.onActivated.addListener( async ({ tabId }) => {
     console.log("onActivated triggered")
     const tab = await chrome.tabs.get(tabId); // Get tab from tabId
     console.log(tab);
-    if (tab.url && tab.url.includes("youtube.com/watch")) {
+    if (isYouTube(tab)) {
         if (timeRemaining <= 0) {
             chrome.tabs.sendMessage(tabId, {type: "block"});
             return;
