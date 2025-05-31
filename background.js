@@ -84,21 +84,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 
-chrome.tabs.onActivated.addListener(({ tabId }) => {
+chrome.tabs.onActivated.addListener( async ({ tabId }) => {
     console.log("onActivated triggered")
-    console.log(tabId);
-    // Get tab corresponding to tabId
-    chrome.tabs.get(tabId, (tab) => {
-        if (tab.url && tab.url.includes("youtube.com/watch")) {
-            if (timeRemaining <= 0) {
-                chrome.tabs.sendMessage(tabId, {type: "block"});
-                return;
-            };
-            console.log("We're on a video page!");
-            activateClock();
-        } else {
-            console.log("We're not on a video page")
-            stopClock();
-        }
-    })
+    const tab = await chrome.tabs.get(tabId); // Get tab from tabId
+    console.log(tab);
+    if (tab.url && tab.url.includes("youtube.com/watch")) {
+        if (timeRemaining <= 0) {
+            chrome.tabs.sendMessage(tabId, {type: "block"});
+            return;
+        };
+        console.log("We're on a video page!");
+        activateClock();
+    } else {
+        console.log("We're not on a video page")
+        stopClock();
+    }
 })
