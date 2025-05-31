@@ -1,6 +1,7 @@
 // A.M.D.G.
-let timeRemaining = 10;
+let timeRemaining = 10*60;
 let clockInterval = undefined;
+let prevTab = undefined;
 
 console.log("Background is live");
 
@@ -73,7 +74,15 @@ function isYouTube(tab) {
 
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    console.log("onUpdate triggered")
+    console.log("onUpdate triggered");
+    // Set prevTab if it hasn't been defined, else pause video on previous tab.
+    if (prevTab == undefined) {
+        prevTab = tab;
+    } else {
+        if (isYouTube(prevTab)) {
+            console.log("Pausing previous tab")
+        }
+    }
     if (isYouTube(tab)) {
         if (timeRemaining <= 0) {
             chrome.tabs.sendMessage(tabId, {type: "block"});
@@ -85,13 +94,20 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         console.log("We're not on a video page");
         stopClock();
     }
+    prevTab = tab;
 })
 
 
 chrome.tabs.onActivated.addListener( async ({ tabId }) => {
     console.log("onActivated triggered")
     const tab = await chrome.tabs.get(tabId); // Get tab from tabId
-    console.log(tab);
+    if (prevTab == undefined) {
+        prevTab = tab;
+    } else {
+        if (isYouTube(prevTab)) {
+            console.log("Pausing previous tab")
+        }
+    }
     if (isYouTube(tab)) {
         if (timeRemaining <= 0) {
             chrome.tabs.sendMessage(tabId, {type: "block"});
@@ -103,4 +119,5 @@ chrome.tabs.onActivated.addListener( async ({ tabId }) => {
         console.log("We're not on a video page")
         stopClock();
     }
+    prevTab = tab;
 })
