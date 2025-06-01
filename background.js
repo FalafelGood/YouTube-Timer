@@ -72,15 +72,38 @@ function isYouTube(tab) {
     return (tab.url && tab.url.includes("youtube.com"));
 }
 
+// Check and see if the video on a YouTube element is already playing.
+// function isVideoPlaying(tab) {
+
+// }
+
+
+async function pauseVideo(tab) {
+    // Todo, build YouTube check into pauseVideo
+    await chrome.scripting.executeScript({
+        target: {"tabId": tab.id},
+        func: () => {
+            console.log("Inside script!");
+            const player = document.querySelector('#movie_player');
+            const video = player.querySelector('video');
+            console.log(video);
+            if (video) {
+                video.pause();
+            }
+        }
+    })
+}
+
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log("onUpdate triggered");
     // Set prevTab if it hasn't been defined, else pause video on previous tab.
     if (prevTab == undefined) {
         prevTab = tab;
-    } else {
+    } else if (prevTab.url != tab.url) {
         if (isYouTube(prevTab)) {
             console.log("Pausing previous tab")
+            pauseVideo(prevTab);
         }
     }
     if (isYouTube(tab)) {
@@ -103,9 +126,10 @@ chrome.tabs.onActivated.addListener( async ({ tabId }) => {
     const tab = await chrome.tabs.get(tabId); // Get tab from tabId
     if (prevTab == undefined) {
         prevTab = tab;
-    } else {
+    } else if (prevTab.url != tab.url) {
         if (isYouTube(prevTab)) {
             console.log("Pausing previous tab")
+            pauseVideo(prevTab);
         }
     }
     if (isYouTube(tab)) {
