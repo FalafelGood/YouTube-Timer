@@ -28,6 +28,14 @@ chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
     }
 });
 
+// Listen for any changes to time limits through settings
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (changes.dailyTime) {
+        dailyTime = changes.dailyTime.newValue
+        timeRemaining = dailyTime;
+    }
+});
+
 // chrome.storage.sync.set({"timeRemaining": timeRemaining}).then(() => {
 //     console.log(`YouTube time is set for ${timeRemaining}s.`);
 // });

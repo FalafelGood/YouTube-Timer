@@ -24,9 +24,17 @@ chrome.storage.sync.get(["timeRemaining"]).then((res) => {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("change noted in popup.js");
-    time = changes.timeRemaining.newValue;
-    console.log(time);
-    timeEl.innerText = formatTime(time);
+    if (changes.dailyTime) {
+        console.log("Changing daily time")
+        time = changes.dailyTime.newValue;
+        timeEl.innerText = formatTime(time);
+    }
+    if (changes.timeRemaining) {
+        console.log("Changing timeRemaining")
+        time = changes.timeRemaining.newValue;
+        console.log(time);
+        timeEl.innerText = formatTime(time);
+    }
 });
 
 settingsEl.addEventListener("click", () => {

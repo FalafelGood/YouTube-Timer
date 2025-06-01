@@ -1,31 +1,40 @@
-<link href="settings.css" rel="stylesheet" type="text/css" />
-<script type="module" src="settings.js"></script>
-
-<div class="container">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings</title>
+  <!-- <link href="settings.css" rel="stylesheet" type="text/css" /> -->
+  <script type="module" src="settings.js"></script>
+</head>
+<body>
+  <div class="container">
   <h1>YouTube Timer Settings</h1>
   <h3>
-    Your daily time limit is currently set to: <span id="currentLimit">1:00:00</span>
+    Your daily time limit is currently set to: <span id="daily-time">1h:00m</span>
   </h3>
-  <!--Todo, create toggle switches-->
-  <div class="parent-mode">
-    Parent mode: (Toggling this switch prevents the user from changing these settings without a password)
-  </div>
   <div class="daily-time">
-    <span>Daily time limit: </span>
+    <span>Daily time limit: 
+    h:</span>
     <input type="number" 
       name="hours"
       id="hours"
+      value="1"
       min="0"
       max="9"
     >
+    m:
     <input type="number" 
       name="minutes" 
       id="minutes"
+      value="0"
       min="0"
       max="59"
     >
   </div>
-  <span>Customized weekly usage: </span>
-  <input type="checkbox" name="" id="">
-  <button>Save Preferences</button>
-</div>
+  <!-- <span>Customized weekly usage: </span>
+  <input type="checkbox" name="" id=""> -->
+  <button id="save">Save Preferences</button>
+  </div>
+</body>
+</html>
