@@ -1,7 +1,7 @@
 {
     "name": "YouTube Timer",
     "version": "0.1.0",
-    "description": "Limits the amount of time you spend on YouTube",
+    "description": "Limits the amount of time you can spend on YouTube",
     "permissions": ["tabs", "storage", "scripting"],
     "host_permissions": ["<all_urls>"],
     "icons": {

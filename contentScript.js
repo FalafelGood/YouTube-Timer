@@ -21,11 +21,14 @@
             console.log("blocking page")
             blockPage(obj.id);
         }
+        if (message.type == "promptUser") {
+            alert("ping");
+        }
     })
 
     function blockPage(tabId) {
         // alert("Your YouTube time is up!");
-        document.body.innerHTML = "<h1>blocked! Go pray :P</h1>";
+        document.body.innerHTML = "<h1>Blocked! Go pray :P</h1>";
     }
 
     // chrome.tabs.onMessage.addListener((obj, sender, response) => {

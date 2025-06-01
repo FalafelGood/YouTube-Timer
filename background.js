@@ -1,13 +1,36 @@
 // A.M.D.G.
-let timeRemaining = 10*60;
+let defaultDailyTime = 60*60 // Default 3,600 seconds
+let dailyTime = undefined;
+let timeRemaining = undefined;
 let clockInterval = undefined;
 let prevTab = undefined;
 
 console.log("Background is live");
 
-chrome.storage.sync.set({"timeRemaining": timeRemaining}).then(() => {
-    console.log(`YouTube time is set for ${timeRemaining}s.`);
+// Configure default time on install
+chrome.runtime.onInstalled.addListener( async () => {
+    console.log("Starting up!");
+    chrome.storage.sync.set({"dailyTime": defaultDailyTime, "timeRemaining": defaultDailyTime});
+    chrome.tabs.create({
+        url: "settings.html"
+    })
 });
+
+// Get time limits from storage
+chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
+    if (Object.keys(obj).length == 0) {
+        console.log("dailyTime is undefined! -- Restoring default")
+        dailyTime = defaultDailyTime
+        timeRemaining = dailyTime;
+    } else {
+        dailyTime = obj.dailyTime;
+        timeRemaining = dailyTime;
+    }
+});
+
+// chrome.storage.sync.set({"timeRemaining": timeRemaining}).then(() => {
+//     console.log(`YouTube time is set for ${timeRemaining}s.`);
+// });
 
 
 // Copied from developer.chrome.com/docs/extensions/reference/api/tabs
