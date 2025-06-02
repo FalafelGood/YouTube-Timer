@@ -9,17 +9,18 @@ console.log("Background is live");
 
 // Configure default time on install
 chrome.runtime.onInstalled.addListener( async () => {
-    console.log("Starting up!");
+    console.log("onInstalled(): setting things up");
     chrome.storage.sync.set({"dailyTime": defaultDailyTime, "timeRemaining": defaultDailyTime});
     chrome.tabs.create({
         url: "settings.html"
     })
 });
 
+
 // Get time limits from storage
 chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
     if (Object.keys(obj).length == 0) {
-        console.log("dailyTime is undefined! -- Restoring default")
+        console.log("dailyTime is undefined! -- Setting it to the default value")
         dailyTime = defaultDailyTime
         timeRemaining = dailyTime;
     } else {
@@ -27,6 +28,7 @@ chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
         timeRemaining = dailyTime;
     }
 });
+
 
 // Listen for any changes to time limits through settings
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -36,20 +38,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-// chrome.storage.sync.set({"timeRemaining": timeRemaining}).then(() => {
-//     console.log(`YouTube time is set for ${timeRemaining}s.`);
-// });
-
-
-// Copied from developer.chrome.com/docs/extensions/reference/api/tabs
-// function getCurrentTab(callback) {
-//     let queryOptions = { active: true, lastFocusedWindow: true };
-//     chrome.tabs.query(queryOptions, ([tab]) => {
-//       if (chrome.runtime.lastError) console.error(chrome.runtime.lastError);
-//       // `tab` will either be a `tabs.Tab` instance or `undefined`.
-//       callback(tab);
-//     });
-// }
 
 // Style: use async-await with promises rather than callbacks wherever possible
 function getCurrentTab() {
@@ -67,24 +55,15 @@ function getCurrentTab() {
 
 
 function activateClock() {
+    console.log("activateClock(): Attempting clock activation")
     if (!clockInterval) {
         clockInterval = setInterval(async () => {
             timeRemaining--;
-            // Old way... Probably not good style
-            // chrome.storage.sync.set({"timeRemaining": timeRemaining}).then(() => {
-            //     /* Do nothing */
-            // });
             await chrome.storage.sync.set({"timeRemaining": timeRemaining});
-            if (timeRemaining == 0) {
+            if (timeRemaining <= 0) {
+                console.log("  activateClock(): timeRemaining <= 0; Blocking current tab")
                 clearInterval(clockInterval);
-                // Send a message to block current tab
-                // getCurrentTab((tab) => {
-                //     console.log("Getting current tab within activateClock")
-                //     console.log(tab)
-                //     chrome.tabs.sendMessage(tab.id, {type: "block"});
-                // })
                 const tab = await getCurrentTab();
-                console.log("Got tab within activateClock")
                 console.log(tab)
                 chrome.tabs.sendMessage(tab.id, {type: "block"});
             };
@@ -99,14 +78,10 @@ function stopClock() {
     clockInterval = undefined;
 }
 
+
 function isYouTube(tab) {
     return (tab.url && tab.url.includes("youtube.com"));
 }
-
-// Check and see if the video on a YouTube element is already playing.
-// function isVideoPlaying(tab) {
-
-// }
 
 
 async function pauseVideo(tab) {
@@ -127,7 +102,13 @@ async function pauseVideo(tab) {
 
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-    console.log("onUpdate triggered");
+    console.log("onUpdated():");
+    // DEBUG:
+    // console.log(`  status = ${changeInfo.status}`);
+    // console.log(`  audible = ${changeInfo.audible}`);
+    // console.log(`  frozen = ${changeInfo.frozen}`);
+    if (!changeInfo.url) return; // bounce unless the url was changed.
+    console.log(`onUpdated(): url has been changed to ${changeInfo.url}`);
     // Set prevTab if it hasn't been defined, else pause video on previous tab.
     if (prevTab == undefined) {
         prevTab = tab;
@@ -142,10 +123,37 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             chrome.tabs.sendMessage(tabId, {type: "block"});
             return;
         };
-        console.log("We're on a video page!");
+        console.log("  onUpdated(): video page");
         activateClock();
     } else {
-        console.log("We're not on a video page");
+        console.log("  onUpdated(): not a video page");
+        stopClock();
+    }
+    prevTab = tab;
+})
+
+// TODO: test this
+chrome.windows.onFocusChanged.addListener(async () => {
+    console.log("onFocusChanged(): Window was changed!");
+    const tab = await getCurrentTab();
+    console.log(tab)
+    if (prevTab == undefined) {
+        prevTab = tab;
+    } else if (prevTab.url != tab.url) {
+        if (isYouTube(prevTab)) {
+            console.log("Pausing previous tab")
+            pauseVideo(prevTab);
+        }
+    }
+    if (isYouTube(tab)) {
+        if (timeRemaining <= 0) {
+            chrome.tabs.sendMessage(tabId, {type: "block"});
+            return;
+        };
+        console.log("  onActivated(): video page!");
+        activateClock();
+    } else {
+        console.log("  onActivated(): not a video page")
         stopClock();
     }
     prevTab = tab;
@@ -153,7 +161,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 
 chrome.tabs.onActivated.addListener( async ({ tabId }) => {
-    console.log("onActivated triggered")
+    console.log("onActivated()")
     const tab = await chrome.tabs.get(tabId); // Get tab from tabId
     if (prevTab == undefined) {
         prevTab = tab;
@@ -168,10 +176,10 @@ chrome.tabs.onActivated.addListener( async ({ tabId }) => {
             chrome.tabs.sendMessage(tabId, {type: "block"});
             return;
         };
-        console.log("We're on a video page!");
+        console.log("  onActivated(): video page!");
         activateClock();
     } else {
-        console.log("We're not on a video page")
+        console.log("  onActivated(): not a video page")
         stopClock();
     }
     prevTab = tab;

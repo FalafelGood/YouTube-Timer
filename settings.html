@@ -4,37 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings</title>
-  <!-- <link href="settings.css" rel="stylesheet" type="text/css" /> -->
+  <link href="settings.css" rel="stylesheet" type="text/css" />
   <script type="module" src="settings.js"></script>
 </head>
 <body>
   <div class="container">
-  <h1>YouTube Timer Settings</h1>
-  <h3>
-    Your daily time limit is currently set to: <span id="daily-time">1h:00m</span>
-  </h3>
-  <div class="daily-time">
-    <span>Daily time limit: 
-    h:</span>
-    <input type="number" 
-      name="hours"
-      id="hours"
-      value="1"
-      min="0"
-      max="9"
-    >
-    m:
-    <input type="number" 
-      name="minutes" 
-      id="minutes"
-      value="0"
-      min="0"
-      max="59"
-    >
-  </div>
-  <!-- <span>Customized weekly usage: </span>
-  <input type="checkbox" name="" id=""> -->
-  <button id="save">Save Preferences</button>
+    <h1>YouTube Timer Settings</h1>
+    <img src="/icons/YouTubeTimer128.png" alt="">
+    <h3>Your time limit is currently set to: <span id="daily-time">1h:00m</span></h3>
+    <div class="time-setting">
+      <div>
+        Set daily time limit:
+      </div>
+      <div>
+      h:
+      <input type="number" 
+        name="hours"
+        id="hours"
+        value="1"
+        min="0"
+        max="9"
+      >
+      m:
+      <input type="number" 
+        name="minutes" 
+        id="minutes"
+        value="0"
+        min="0"
+        max="59"
+      >
+      </div>
+    </div>
+    <!-- <span>Customized weekly usage: </span>
+    <input type="checkbox" name="" id=""> -->
+    <button id="save">Save Preferences</button>
   </div>
 </body>
 </html>
