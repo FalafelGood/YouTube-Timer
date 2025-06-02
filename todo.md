@@ -8,6 +8,7 @@
 * Modify the timer so it only runs when a video is actually being played.
 * Add a "failsafe" in background.js that will stop the timer in case the other listeners don't pick up on a tab switch / activation.
 * Modify code so time-limit resets when the date tracks over
+* Put the timer as an element in the YouTube page
 
 ### Bugs
 * Check if tabs still exist before trying to access them

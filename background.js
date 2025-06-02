@@ -1,5 +1,5 @@
 // A.M.D.G.
-let defaultDailyTime = 60*60 // Default 3,600 seconds
+let defaultDailyTime = 60*60 // Default is 3,600 seconds or 1 hour
 let dailyTime = undefined;
 let timeRemaining = undefined;
 let clockInterval = undefined;
@@ -67,7 +67,7 @@ function activateClock() {
                 console.log(tab)
                 chrome.tabs.sendMessage(tab.id, {type: "block"});
             };
-            console.log(timeRemaining); // debug
+            console.log(`seconds left: ${timeRemaining}`);
         }, 1000);
     }
 }
@@ -80,6 +80,7 @@ function stopClock() {
 
 
 function isYouTube(tab) {
+    if (!tab) return false;
     return (tab.url && tab.url.includes("youtube.com"));
 }
 
@@ -103,84 +104,52 @@ async function pauseVideo(tab) {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log("onUpdated():");
-    // DEBUG:
-    // console.log(`  status = ${changeInfo.status}`);
-    // console.log(`  audible = ${changeInfo.audible}`);
-    // console.log(`  frozen = ${changeInfo.frozen}`);
     if (!changeInfo.url) return; // bounce unless the url was changed.
-    console.log(`onUpdated(): url has been changed to ${changeInfo.url}`);
-    // Set prevTab if it hasn't been defined, else pause video on previous tab.
-    if (prevTab == undefined) {
-        prevTab = tab;
-    } else if (prevTab.url != tab.url) {
-        if (isYouTube(prevTab)) {
-            console.log("Pausing previous tab")
-            pauseVideo(prevTab);
-        }
-    }
-    if (isYouTube(tab)) {
-        if (timeRemaining <= 0) {
-            chrome.tabs.sendMessage(tabId, {type: "block"});
-            return;
-        };
-        console.log("  onUpdated(): video page");
-        activateClock();
-    } else {
-        console.log("  onUpdated(): not a video page");
-        stopClock();
-    }
-    prevTab = tab;
+    main(tab);
 })
 
-// TODO: test this
+
 chrome.windows.onFocusChanged.addListener(async () => {
-    console.log("onFocusChanged(): Window was changed!");
+    console.log("onFocusChanged():");
     const tab = await getCurrentTab();
-    console.log(tab)
-    if (prevTab == undefined) {
-        prevTab = tab;
-    } else if (prevTab.url != tab.url) {
-        if (isYouTube(prevTab)) {
-            console.log("Pausing previous tab")
-            pauseVideo(prevTab);
-        }
-    }
-    if (isYouTube(tab)) {
-        if (timeRemaining <= 0) {
-            chrome.tabs.sendMessage(tabId, {type: "block"});
-            return;
-        };
-        console.log("  onActivated(): video page!");
-        activateClock();
-    } else {
-        console.log("  onActivated(): not a video page")
-        stopClock();
-    }
-    prevTab = tab;
+    main(tab);
 })
 
 
 chrome.tabs.onActivated.addListener( async ({ tabId }) => {
-    console.log("onActivated()")
+    console.log("onActivated():")
     const tab = await chrome.tabs.get(tabId); // Get tab from tabId
-    if (prevTab == undefined) {
-        prevTab = tab;
-    } else if (prevTab.url != tab.url) {
-        if (isYouTube(prevTab)) {
-            console.log("Pausing previous tab")
-            pauseVideo(prevTab);
+    main(tab);
+})
+
+
+function main(tab) {
+    // This try block is here because "tab" is not guarenteed to have a url
+    try {
+        if (prevTab == undefined) {
+            prevTab = tab;
+        } else if (prevTab.url != tab.url) {
+            if (isYouTube(prevTab)) {
+                console.log("Pausing previous tab")
+                pauseVideo(prevTab);
+            }
         }
+    } catch (error) {
+        console.log("main(): no URL found... Carrying on!")
     }
     if (isYouTube(tab)) {
         if (timeRemaining <= 0) {
+            const tabId = tab.id;
             chrome.tabs.sendMessage(tabId, {type: "block"});
             return;
         };
-        console.log("  onActivated(): video page!");
+        console.log("  main(): on video page");
         activateClock();
     } else {
-        console.log("  onActivated(): not a video page")
+        console.log("  main(): not a video page");
         stopClock();
     }
     prevTab = tab;
-})
+}
+
+
