@@ -3,11 +3,13 @@ let defaultDailyTime = 60*60 // Default is 3,600 seconds or 1 hour
 let dailyTime = undefined;
 let timeRemaining = undefined;
 let clockInterval = undefined;
-let prevTab = undefined;
+let prevTab = undefined; // The previously selected tab -- used to pause YT if the user switches tabs
+
 
 console.log("Background is live");
 
-// Configure default time on install
+
+// Configure default settings on install
 chrome.runtime.onInstalled.addListener( async () => {
     console.log("onInstalled(): setting things up");
     chrome.storage.sync.set({"dailyTime": defaultDailyTime, "timeRemaining": defaultDailyTime});
@@ -17,7 +19,7 @@ chrome.runtime.onInstalled.addListener( async () => {
 });
 
 
-// Get time limits from storage
+// Get user settings from storage
 chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
     if (Object.keys(obj).length == 0) {
         console.log("dailyTime is undefined! -- Setting it to the default value")
@@ -30,7 +32,7 @@ chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
 });
 
 
-// Listen for any changes to time limits through settings
+// Listen for any changes made to the daily time limit
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (changes.dailyTime) {
         dailyTime = changes.dailyTime.newValue
@@ -39,7 +41,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 });
 
 
-// Style: use async-await with promises rather than callbacks wherever possible
 function getCurrentTab() {
     return new Promise((resolve, reject) => {
         const queryOptions = { active: true, lastFocusedWindow: true };
@@ -85,12 +86,12 @@ function isYouTube(tab) {
 }
 
 
+// Injects and runs a script that pauses the YT video (if any) on the previous tab.
 async function pauseVideo(tab) {
-    // Todo, build YouTube check into pauseVideo
     await chrome.scripting.executeScript({
         target: {"tabId": tab.id},
         func: () => {
-            console.log("Inside script!");
+            console.log("pauseVideo()");
             const player = document.querySelector('#movie_player');
             const video = player.querySelector('video');
             console.log(video);
@@ -104,7 +105,8 @@ async function pauseVideo(tab) {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     console.log("onUpdated():");
-    if (!changeInfo.url) return; // bounce unless the url was changed.
+    // Most tab updates are unimportant. Our only concern is if the URL changes
+    if (!changeInfo.url) return;
     main(tab);
 })
 
