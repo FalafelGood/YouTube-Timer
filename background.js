@@ -14,7 +14,7 @@ chrome.runtime.onInstalled.addListener( async () => {
     console.log("onInstalled(): setting things up");
     chrome.storage.sync.set({"dailyTime": defaultDailyTime, "timeRemaining": defaultDailyTime});
     chrome.tabs.create({
-        url: "settings.html"
+        url: "pages/settings.html"
     })
 });
 

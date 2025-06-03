@@ -39,14 +39,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 settingsEl.addEventListener("click", () => {
     chrome.tabs.create({
-        "url": "settings.html",
+        "url": "pages/settings.html",
     });
 })
 
 newWindowEl.addEventListener("click", () => {
     chrome.windows.create(
         {
-            "url": "bigTimer.html",
+            "url": "pages/bigTimer.html",
             "width": 500,
             "height": 390
         }
