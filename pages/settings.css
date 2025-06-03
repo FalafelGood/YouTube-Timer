@@ -36,13 +36,22 @@ h3 {
     font-size: 20px;
 }
 
-.time-setting {
+.settings {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+}
+
+.setting {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 70%;
     font-size: 16px;
     margin-bottom: 20px;
+}
+
+.number-box {
+    width: 40px;
 }
 
 #save {

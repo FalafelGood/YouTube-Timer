@@ -12,27 +12,31 @@
     <h1>YouTube Timer Settings</h1>
     <img src="/icons/YouTubeTimer128.png" alt="">
     <h3>Your time limit is currently set to: <span id="daily-time">1h:00m</span></h3>
-    <div class="time-setting">
-      <div>
-        Set daily time limit:
-      </div>
-      <div>
-      h:
-      <input type="number" 
-        name="hours"
-        id="hours"
-        value="1"
-        min="0"
-        max="9"
-      >
-      m:
-      <input type="number" 
-        name="minutes" 
-        id="minutes"
-        value="0"
-        min="0"
-        max="59"
-      >
+    <div class="settings">
+      <div class="setting">
+        <div>
+          Set daily time limit:
+        </div>
+        <div>
+        h:
+        <input type="number" 
+          name="hours"
+          id="hours"
+          value="1"
+          min="0"
+          max="9"
+          class="number-box"
+        >
+        m:
+        <input type="number" 
+          name="minutes" 
+          id="minutes"
+          value="0"
+          min="0"
+          max="59"
+          class="number-box"
+        >
+        </div>
       </div>
     </div>
     <!-- <span>Customized weekly usage: </span>
