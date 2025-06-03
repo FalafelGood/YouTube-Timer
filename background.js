@@ -12,7 +12,10 @@ console.log("Background is live");
 // Configure default settings on install
 chrome.runtime.onInstalled.addListener( async () => {
     console.log("onInstalled(): setting things up");
-    chrome.storage.sync.set({"dailyTime": defaultDailyTime, "timeRemaining": defaultDailyTime});
+    chrome.storage.sync.set({"dailyTime": defaultDailyTime, 
+        "timeRemaining": defaultDailyTime, 
+        "parentalControls": false, 
+        "password": undefined});
     chrome.tabs.create({
         url: "pages/settings.html"
     })
