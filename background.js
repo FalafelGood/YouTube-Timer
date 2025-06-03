@@ -109,18 +109,22 @@ function isYouTube(tab) {
 
 // Injects and runs a script that pauses the YT video (if any) on the previous tab.
 async function pauseVideo(tab) {
-    await chrome.scripting.executeScript({
-        target: {"tabId": tab.id},
-        func: () => {
-            console.log("pauseVideo()");
-            const player = document.querySelector('#movie_player');
-            const video = player.querySelector('video');
-            console.log(video);
-            if (video) {
-                video.pause();
+    try{
+        await chrome.scripting.executeScript({
+            target: {"tabId": tab.id},
+            func: () => {
+                console.log("pauseVideo()");
+                const player = document.querySelector('#movie_player');
+                const video = player.querySelector('video');
+                console.log(video);
+                if (video) {
+                    video.pause();
+                }
             }
-        }
-    })
+        })
+    } catch (error) {
+        // Do nothing -- Previous tab no longer exists
+    }
 }
 
 
