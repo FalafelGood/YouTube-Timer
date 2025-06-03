@@ -16,10 +16,16 @@ chrome.runtime.onInstalled.addListener( async () => {
     chrome.tabs.create({
         url: "pages/settings.html"
     })
+
+    // Set the login date:
+    const now = new Date();
+    const loginDate = now.toDateString();
+    console.log(`onInstalled(): loginDate = ${loginDate}`)
+    chrome.storage.sync.set({"loginDate": loginDate});
 });
 
 
-// Get user settings from storage
+// Get user's dailyTime setting from storage
 chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
     if (Object.keys(obj).length == 0) {
         console.log("dailyTime is undefined! -- Setting it to the default value")
@@ -27,9 +33,24 @@ chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
         timeRemaining = dailyTime;
     } else {
         dailyTime = obj.dailyTime;
-        timeRemaining = dailyTime;
+        // timeRemaining = dailyTime; // TODO -- Redundent?
     }
 });
+
+
+// Reset timeRemaining if current date is different from login date:
+chrome.storage.sync.get(["loginDate"]).then((obj) => {
+    if (obj.loginDate) {
+        const now = new Date();
+        const currentDate = now.toDateString();
+        console.log(`background.js: currentDate = ${currentDate}`)
+        if (currentDate != obj.currentDate) {
+            console.log(`Dates are not the same! Resetting timeRemaining to ${dailyTime}`);
+            chrome.storage.sync.set({"timeRemaining": dailyTime});
+            timeRemaining = dailyTime;
+        }
+    }
+})
 
 
 // Listen for any changes made to the daily time limit

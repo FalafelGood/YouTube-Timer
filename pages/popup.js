@@ -5,7 +5,12 @@ let newWindowEl = document.getElementById("timer-window");
 let time = undefined;
 
 console.log("popup.js is live");
-console.log(timeEl);
+
+chrome.storage.sync.get(["timeRemaining"]).then((res) => {
+    console.log("popup.js: timeRemaining = " + res.timeRemaining);
+    time = res.timeRemaining;
+    timeEl.innerText = formatTime(time);
+})
 
 // Take seconds remaining and format it into hh:mm:ss
 function formatTime(secondsRemaining) {
@@ -15,12 +20,6 @@ function formatTime(secondsRemaining) {
     const result = date.toISOString().slice(11,19);
     return result;
 }
-
-chrome.storage.sync.get(["timeRemaining"]).then((res) => {
-    console.log("Initial time is " + res.timeRemaining);
-    time = res.timeRemaining;
-    timeEl.innerText = formatTime(time);
-})
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("change noted in popup.js");
