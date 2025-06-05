@@ -21,13 +21,13 @@ const redirectRule = {
 
 console.log("Background is live");
 
-/* ------------ START-UP ------------- */
+/* ------------ THINGS THAT RUN ON START-UP ------------- */
 
-// Clear existing redirect rules:
-chrome.declarativeNetRequest.updateSessionRules({
-    "addRules": [],
-    "removeRuleIds": [1]
-});
+// Clear existing rules for the redirect:
+// chrome.declarativeNetRequest.updateSessionRules({
+//     "addRules": [],
+//     "removeRuleIds": [1]
+// });
 
 
 // Configure default settings on install
@@ -48,11 +48,13 @@ chrome.runtime.onInstalled.addListener( async () => {
     const loginDate = now.toDateString();
     console.log(`onInstalled(): loginDate = ${loginDate}`)
     chrome.storage.sync.set({"loginDate": loginDate});
+
+    // Probably not necessary, but good hygine just in case.
+    clearRedirectRules();
 });
 
 
 // Get user's dailyTime setting from storage
-// (Object.keys(obj).length == 0)
 console.log("Getting dailyTime and timeRemaining from storage")
 chrome.storage.sync.get(["dailyTime", "timeRemaining"]).then((obj) => {
     if (obj.dailyTime == undefined) {
@@ -77,6 +79,7 @@ chrome.storage.sync.get(["loginDate"]).then((obj) => {
         if (currentDate != obj.currentDate) {
             console.log(`Dates are not the same! Resetting timeRemaining to ${timeRemaining}`);
             chrome.storage.sync.set({"timeRemaining": timeRemaining});
+            clearRedirectRules();
         }
     }
 })
@@ -90,6 +93,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         timeRemaining = dailyTime;
     }
 });
+
+
+function clearRedirectRules() {
+    chrome.declarativeNetRequest.updateSessionRules({
+    "addRules": [],
+    "removeRuleIds": [1]
+    });
+}
 
 
 function getCurrentTab() {
@@ -110,9 +121,10 @@ function activateClock() {
     console.log("activateClock(): Attempting clock activation")
     if (!clockInterval) {
         clockInterval = setInterval(async () => {
-            timeRemaining--;
+            if (timeRemaining > 0) timeRemaining--;
             await chrome.storage.sync.set({"timeRemaining": timeRemaining});
             if (timeRemaining <= 0) {
+                timeRemaining = 0;
                 console.log("  activateClock(): timeRemaining <= 0; Blocking current tab")
                 // Update session rules
                 chrome.declarativeNetRequest.updateSessionRules({
