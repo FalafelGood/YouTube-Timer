@@ -1,5 +1,7 @@
 // A.M.D.G.
 
+/* ------------ GLOBALS AND CONSTANTS ------------- */
+
 let defaultDailyTime = 60*60 // Default is 3,600 seconds or 1 hour
 let dailyTime = undefined;
 let timeRemaining = undefined;
@@ -19,16 +21,11 @@ const redirectRule = {
     }
 }
 
-console.log("Background is live");
 
 /* ------------ THINGS THAT RUN ON START-UP ------------- */
 
-// Clear existing rules for the redirect:
-// chrome.declarativeNetRequest.updateSessionRules({
-//     "addRules": [],
-//     "removeRuleIds": [1]
-// });
 
+console.log("Background is live");
 
 // Configure default settings on install
 chrome.runtime.onInstalled.addListener( async () => {
@@ -65,7 +62,6 @@ chrome.storage.sync.get(["dailyTime", "timeRemaining"]).then((obj) => {
         dailyTime = obj.dailyTime;
         timeRemaining = obj.timeRemaining;
         console.log(`debug: timeRemaining = ${timeRemaining}`)
-        // timeRemaining = dailyTime; // TODO -- Redundent?
     }
 });
 
@@ -84,7 +80,9 @@ chrome.storage.sync.get(["loginDate"]).then((obj) => {
     }
 })
 
+
 /* ------------ FUNCTIONS AND LISTENERS ------------- */
+
 
 // Listen for any changes made to the daily time limit
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -133,10 +131,8 @@ function activateClock() {
                 })
                 clearInterval(clockInterval);
                 const tab = await getCurrentTab();
-                console.log(tab)
+                // console.log(tab)
                 chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("pages/blocked.html") })
-                // redirect tab to /pages/blocked.html
-                // chrome.tabs.sendMessage(tab.id, {type: "reload"});
             };
             console.log(`seconds left: ${timeRemaining}`);
         }, 1000);
@@ -199,6 +195,9 @@ chrome.tabs.onActivated.addListener( async ({ tabId }) => {
 })
 
 
+/*
+The main logic common to the tab / window event listeners.
+*/
 function main(tab) {
     // This try block is here because "tab" is not guarenteed to have a url
     try {
