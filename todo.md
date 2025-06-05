@@ -10,6 +10,7 @@
 
 ### Bugs
 
+* Quitting chrome and opening it again resets the time limit. This is because background.js reruns.
 * (Bug) Check if tabs still exist before trying to access them
 
 ### Code quality

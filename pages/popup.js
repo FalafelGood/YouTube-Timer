@@ -23,11 +23,6 @@ function formatTime(secondsRemaining) {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     console.log("change noted in popup.js");
-    // if (changes.dailyTime) {
-    //     console.log("Changing daily time")
-    //     time = changes.dailyTime.newValue;
-    //     timeEl.innerText = formatTime(time);
-    // }
     if (changes.timeRemaining) {
         console.log("Changing timeRemaining")
         time = changes.timeRemaining.newValue;

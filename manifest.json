@@ -2,7 +2,7 @@
     "name": "YouTube Timer",
     "version": "0.1.0",
     "description": "Limits the amount of time you can spend on YouTube",
-    "permissions": ["tabs", "storage", "scripting"],
+    "permissions": ["tabs", "storage", "scripting", "declarativeNetRequest"],
     "host_permissions": ["<all_urls>"],
     "icons": {
       "128": "/icons/YouTubeTimer128.png",

@@ -1,21 +1,44 @@
 // A.M.D.G.
+
 let defaultDailyTime = 60*60 // Default is 3,600 seconds or 1 hour
 let dailyTime = undefined;
 let timeRemaining = undefined;
 let clockInterval = undefined;
 let prevTab = undefined; // The previously selected tab -- used to pause YT if the user switches tabs
 
+const redirectRule = {
+    id: 1,
+    priority: 1,
+    action: {
+        type: "redirect",
+        redirect: { extensionPath: '/pages/blocked.html'}
+    },
+    condition: {
+        urlFilter: 'youtube.com',
+        resourceTypes: ['main_frame'] // Specifies what types of network requests the rule should apply to. In this case we're asking this rule to apply to the primary HTML document.
+    }
+}
 
 console.log("Background is live");
+
+/* ------------ START-UP ------------- */
+
+// Clear existing redirect rules:
+chrome.declarativeNetRequest.updateSessionRules({
+    "addRules": [],
+    "removeRuleIds": [1]
+});
 
 
 // Configure default settings on install
 chrome.runtime.onInstalled.addListener( async () => {
     console.log("onInstalled(): setting things up");
-    chrome.storage.sync.set({"dailyTime": defaultDailyTime, 
+    chrome.storage.sync.set({
+        "dailyTime": defaultDailyTime, 
         "timeRemaining": defaultDailyTime, 
         "parentalControls": false, 
-        "password": undefined});
+        "password": undefined
+    });
     chrome.tabs.create({
         url: "pages/settings.html"
     })
@@ -29,13 +52,17 @@ chrome.runtime.onInstalled.addListener( async () => {
 
 
 // Get user's dailyTime setting from storage
-chrome.storage.sync.get({"dailyTime": dailyTime}).then((obj) => {
-    if (Object.keys(obj).length == 0) {
+// (Object.keys(obj).length == 0)
+console.log("Getting dailyTime and timeRemaining from storage")
+chrome.storage.sync.get(["dailyTime", "timeRemaining"]).then((obj) => {
+    if (obj.dailyTime == undefined) {
         console.log("dailyTime is undefined! -- Setting it to the default value")
         dailyTime = defaultDailyTime
         timeRemaining = dailyTime;
     } else {
         dailyTime = obj.dailyTime;
+        timeRemaining = obj.timeRemaining;
+        console.log(`debug: timeRemaining = ${timeRemaining}`)
         // timeRemaining = dailyTime; // TODO -- Redundent?
     }
 });
@@ -48,13 +75,13 @@ chrome.storage.sync.get(["loginDate"]).then((obj) => {
         const currentDate = now.toDateString();
         console.log(`background.js: currentDate = ${currentDate}`)
         if (currentDate != obj.currentDate) {
-            console.log(`Dates are not the same! Resetting timeRemaining to ${dailyTime}`);
-            chrome.storage.sync.set({"timeRemaining": dailyTime});
-            timeRemaining = dailyTime;
+            console.log(`Dates are not the same! Resetting timeRemaining to ${timeRemaining}`);
+            chrome.storage.sync.set({"timeRemaining": timeRemaining});
         }
     }
 })
 
+/* ------------ FUNCTIONS AND LISTENERS ------------- */
 
 // Listen for any changes made to the daily time limit
 chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -87,10 +114,17 @@ function activateClock() {
             await chrome.storage.sync.set({"timeRemaining": timeRemaining});
             if (timeRemaining <= 0) {
                 console.log("  activateClock(): timeRemaining <= 0; Blocking current tab")
+                // Update session rules
+                chrome.declarativeNetRequest.updateSessionRules({
+                    "addRules": [redirectRule],
+                    "removeRuleIds": [1]
+                })
                 clearInterval(clockInterval);
                 const tab = await getCurrentTab();
                 console.log(tab)
-                chrome.tabs.sendMessage(tab.id, {type: "block"});
+                chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("pages/blocked.html") })
+                // redirect tab to /pages/blocked.html
+                // chrome.tabs.sendMessage(tab.id, {type: "reload"});
             };
             console.log(`seconds left: ${timeRemaining}`);
         }, 1000);
@@ -167,14 +201,12 @@ function main(tab) {
     } catch (error) {
         console.log("main(): no URL found... Carrying on!")
     }
+
     if (isYouTube(tab)) {
-        if (timeRemaining <= 0) {
-            const tabId = tab.id;
-            chrome.tabs.sendMessage(tabId, {type: "block"});
-            return;
-        };
-        console.log("  main(): on video page");
-        activateClock();
+        if (timeRemaining >= 0) {
+            console.log("  main(): on video page with time remaining -- calling clock");
+            activateClock();
+        }
     } else {
         console.log("  main(): not a video page");
         stopClock();
